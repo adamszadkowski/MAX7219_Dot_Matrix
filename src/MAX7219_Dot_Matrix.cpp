@@ -33,7 +33,6 @@
 #include <MAX7219_Dot_Matrix.h>
 #include <MAX7219_Dot_Matrix_font.h>
 #include <SPI.h>
-#include <bitBangedSPI.h>
 
 /*
 
@@ -51,13 +50,6 @@ Wiring:
 pin only
 
   Bit-banged SPI:
-
-  Wire LOAD, DIN, CLK to any pins of your choice.
-
-  Make an instance of the class:
-
-    MAX7219_Dot_Matrix myDisplay (2, 6, 7, 8);  // 2 chips, then specify the
-LOAD, DIN, CLK pins
 
 Usage:
 
@@ -84,12 +76,7 @@ Usage:
   For the class to compile you need to include these three files:
 
       SPI.h
-      bitBangedSPI.h
       MAX7219_Dot_Matrix.h
-
-  You can obtain the bitBangedSPI library from:
-
-    https://github.com/nickgammon/bitBangedSPI
 
 */
 
@@ -100,16 +87,8 @@ void MAX7219_Dot_Matrix::begin() {
   pinMode(load_, OUTPUT);
   digitalWrite(load_, HIGH);
 
-  // prepare SPI
-  if (bitBanged_) {
-    if (bbSPI_ == NULL)
-      bbSPI_ = new bitBangedSPI(din_, bitBangedSPI::NO_PIN, clock_);
-    bbSPI_->begin();
-  }      // end of bit banged SPI
-  else { // hardware SPI
-    SPI.begin();
-    //    SPI.setClockDivider (SPI_CLOCK_DIV8);
-  } // end of hardware SPI
+  SPI.begin();
+  //    SPI.setClockDivider (SPI_CLOCK_DIV8);
 
   // repeatedly configure the chips in case they start up in a mode which
   // draws a lot of current
@@ -127,14 +106,7 @@ void MAX7219_Dot_Matrix::begin() {
 void MAX7219_Dot_Matrix::end() {
   sendToAll(MAX7219_REG_SHUTDOWN, 0); // shutdown mode (ie. turn it off)
 
-  if (bbSPI_ != NULL) {
-    delete bbSPI_;
-    bbSPI_ = NULL;
-  }
-
-  if (!bitBanged_)
-    SPI.end();
-
+  SPI.end();
 } // end of MAX7219_Dot_Matrix::end
 
 void MAX7219_Dot_Matrix::setIntensity(const byte amount) {
@@ -144,15 +116,8 @@ void MAX7219_Dot_Matrix::setIntensity(const byte amount) {
 
 // send one byte to MAX7219
 void MAX7219_Dot_Matrix::sendByte(const byte reg, const byte data) {
-  if (bitBanged_) {
-    if (bbSPI_ != NULL) {
-      bbSPI_->transfer(reg);
-      bbSPI_->transfer(data);
-    }
-  } else {
-    SPI.transfer(reg);
-    SPI.transfer(data);
-  }
+  SPI.transfer(reg);
+  SPI.transfer(data);
 } // end of sendByte
 
 void MAX7219_Dot_Matrix::sendToAll(const byte reg, const byte data) {

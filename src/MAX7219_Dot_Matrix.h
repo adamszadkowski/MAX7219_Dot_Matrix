@@ -8,8 +8,6 @@ class MAX7219_Dot_Matrix {
   const byte load_;
   const byte din_;
   const byte clock_;
-  const bool bitBanged_;
-  bitBangedSPI *bbSPI_;
 
   void sendByte(const byte reg, const byte data);
   void sendToAll(const byte reg, const byte data);
@@ -29,8 +27,7 @@ public:
   // constructor
   MAX7219_Dot_Matrix(const byte chips, const byte load, const byte din = 0,
                      const byte clock = 0)
-      : chips_(chips), load_(load), din_(din), clock_(clock),
-        bitBanged_((din | clock) != 0), bbSPI_(NULL) {}
+      : chips_(chips), load_(load), din_(din), clock_(clock) {}
 
   ~MAX7219_Dot_Matrix(); // destructor
   void begin();
